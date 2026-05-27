@@ -8,6 +8,7 @@ from models.order_item import OrderItem
 from models.order import Order
 from queries.read_order import get_orders_from_mysql
 from db import get_sqlalchemy_session, get_redis_conn
+import config 
 
 def add_order(user_id: int, items: list):
     """Insert order with items in MySQL, keep Redis in sync"""
@@ -101,29 +102,73 @@ def add_order_to_redis(order_id, user_id, total_amount, items):
     """Insert order to Redis"""
     r = get_redis_conn()
     print(r)
+    """
+    Store order and order items in Redis
+    """
+    # Store main order
+    r.hset(
+        f"order:{order_id}",
+        mapping={
+            "id": order_id,
+            "user_id": user_id,
+            "total_amount": total_amount
+        }
+    )
+    # Store order items
+    for index, item in enumerate(items):
+
+        r.hset(
+            f"order:{order_id}:item:{index}",
+            mapping={
+                "product_id": item["product_id"],
+                "quantity": item["quantity"],
+                "unit_price": item["unit_price"]
+            }
+        )
+    # Keep track of newest orders
+    r.lpush("orders", order_id)
+    
 
 def delete_order_from_redis(order_id):
     """Delete order from Redis"""
+     # Delete main order hash
+
+    r = get_redis_conn()
+    print(r)
+
+    r.delete(f"order:{order_id}")
+
+    # Find all item keys
+    item_keys = r.keys(f"order:{order_id}:item:*")
+
+    # Delete all item hashes
+    if item_keys:
+        r.delete(*item_keys)
+
+    # Remove order ID from latest orders list
+    r.lrem("orders", 0, order_id)
     pass
 
 def sync_all_orders_to_redis():
     """ Sync orders from MySQL to Redis """
     # redis
-    r = get_redis_conn()
-    orders_in_redis = r.keys(f"order:*")
-    rows_added = 0
-    try:
-        if len(orders_in_redis) == 0:
-            # mysql
-            orders_from_mysql = []
-            for order in orders_from_mysql:
-                # TODO: terminez l'implementation
-                print(order)
-            rows_added = len(orders_from_mysql)
-        else:
-            print('Redis already contains orders, no need to sync!')
-    except Exception as e:
-        print(e)
-        return 0
-    finally:
-        return len(orders_in_redis) + rows_added
+    if config.REDIS_COUNTER == 0 :
+        config.REDIS_COUNTER += 1
+        r = get_redis_conn()
+        orders_in_redis = r.keys(f"order:*")
+        rows_added = 0
+        try:
+            if len(orders_in_redis) == 0:
+                # mysql
+                orders_from_mysql = []
+                for order in orders_from_mysql:
+                    # TODO: terminez l'implementation
+                    print(order)
+                rows_added = len(orders_from_mysql)
+            else:
+                print('Redis already contains orders, no need to sync!')
+        except Exception as e:
+            print(e)
+            return 0
+        finally:
+            return len(orders_in_redis) + rows_added

@@ -20,9 +20,17 @@ def get_orders_from_mysql(limit=9999):
 
 def get_orders_from_redis(limit=9999):
     """Get last X orders"""
-    # TODO: écrivez la méthode
+    r = get_redis_conn()
+    order_ids = r.lrange("orders", 0, limit - 1)
     print(limit)
-    return []
+
+    orders = []
+    order_ids = r.zrevrange("orders", 0, limit - 1)
+
+    return [
+            r.hgetall(f"order:{order_id}")
+            for order_id in order_ids
+        ]  
 
 def get_highest_spending_users():
     """Get report of best selling products"""
