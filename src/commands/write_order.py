@@ -66,7 +66,7 @@ def add_order(user_id: int, items: list):
         session.commit()
 
         # TODO: ajouter la commande à Redis
-        add_order_to_redis(order_id, user_id, total_amount, items)
+        add_order_to_redis( order_id,user_id, total_amount, order_items_data)
 
         return order_id
 
@@ -88,9 +88,9 @@ def delete_order(order_id: int):
 
             # TODO: supprimer la commande à Redis
             delete_order_from_redis(order_id)
-            return 1  
+            return int(1)  
         else:
-            return 0  
+            return int(0)  
             
     except Exception as e:
         session.rollback()
@@ -100,6 +100,7 @@ def delete_order(order_id: int):
 
 def add_order_to_redis(order_id, user_id, total_amount, items):
     """Insert order to Redis"""
+    
     r = get_redis_conn()
     print(r)
     """
@@ -131,7 +132,7 @@ def add_order_to_redis(order_id, user_id, total_amount, items):
 
 def delete_order_from_redis(order_id):
     """Delete order from Redis"""
-     # Delete main order hash
+    # Delete main order hash
 
     r = get_redis_conn()
     print(r)
@@ -146,8 +147,8 @@ def delete_order_from_redis(order_id):
         r.delete(*item_keys)
 
     # Remove order ID from latest orders list
-    r.lrem("orders", 0, order_id)
-    pass
+    r.lrem("orders", 0, str(order_id))
+    
 
 def sync_all_orders_to_redis():
     """ Sync orders from MySQL to Redis """
