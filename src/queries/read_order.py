@@ -42,7 +42,6 @@ def get_highest_spending_users():
     orders = []
 
     for key in keys:
-        # Skip item hashes
         if ":item:" in key:
             continue
         data = r.hgetall(key)
