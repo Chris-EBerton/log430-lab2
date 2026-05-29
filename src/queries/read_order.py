@@ -4,6 +4,8 @@ SPDX - License - Identifier: LGPL - 3.0 - or -later
 Auteurs : Gabriel C. Ullmann, Fabio Petrillo, 2025
 """
 
+from collections import defaultdict
+
 from db import get_sqlalchemy_session, get_redis_conn
 from sqlalchemy import desc
 from models.order import Order
@@ -32,8 +34,59 @@ def get_orders_from_redis(limit=9999):
             for order_id in order_ids
         ]  
 
+
 def get_highest_spending_users():
+    """Get report of highest spending users"""
+
+    r = get_redis_conn()
+
+    keys = r.keys("order:*")
+
+    orders = []
+
+    for key in keys:
+
+        # Skip item hashes
+        if ":item:" in key:
+            continue
+
+        data = r.hgetall(key)
+
+        if not data:
+            continue
+
+        orders.append(data)
+
+    expenses_by_user = defaultdict(float)
+
+    for order in orders:
+        expenses_by_user[int(order['user_id'])] += float(order['total_amount'])
+
+    highest_spending_users = sorted(
+        expenses_by_user.items(),
+        key=lambda item: item[1],
+        reverse=True
+    )
+
+    result = []
+
+    for user_id, total in highest_spending_users[:10]:
+
+        result.append(
+            f"<li>Utilisateur {user_id}: {total:.2f}$</li>"
+        )
+
+    return "".join(result)
+
+
+def get_best_sellers():
     """Get report of best selling products"""
-    # TODO: écrivez la méthode
-    # triez le résultat par nombre de commandes (ordre décroissant)
-    return []
+    r = get_redis_conn()
+    keys = r.keys("product_sold:")
+    products = []
+    for key in keys:
+        product_id = key.split(":")[1]
+        quantity = int(r.get(key))
+        products.append((int(product_id), quantity))
+    best_sellers = sorted(products, key=lambda item: item[1], reverse=True)
+    return best_sellers
