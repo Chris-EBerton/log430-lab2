@@ -37,24 +37,17 @@ def get_orders_from_redis(limit=9999):
 
 def get_highest_spending_users():
     """Get report of highest spending users"""
-
     r = get_redis_conn()
-
     keys = r.keys("order:*")
-
     orders = []
 
     for key in keys:
-
         # Skip item hashes
         if ":item:" in key:
             continue
-
         data = r.hgetall(key)
-
         if not data:
             continue
-
         orders.append(data)
 
     expenses_by_user = defaultdict(float)
@@ -67,26 +60,42 @@ def get_highest_spending_users():
         key=lambda item: item[1],
         reverse=True
     )
-
     result = []
 
     for user_id, total in highest_spending_users[:10]:
-
         result.append(
-            f"<li>Utilisateur {user_id}: {total:.2f}$</li>"
+            f"<li>{user_id}: {total:.2f}$</li>"
         )
 
     return "".join(result)
 
 
+
 def get_best_sellers():
     """Get report of best selling products"""
+
     r = get_redis_conn()
-    keys = r.keys("product_sold:")
-    products = []
+
+    keys = r.keys("product:*:sold")
+
+    quantities_by_product = {}
+
     for key in keys:
-        product_id = key.split(":")[1]
-        quantity = int(r.get(key))
-        products.append((int(product_id), quantity))
-    best_sellers = sorted(products, key=lambda item: item[1], reverse=True)
-    return best_sellers
+        value = r.get(key)
+
+        if value is None:
+            continue
+
+        product_id = int(key.split(":")[1])
+        quantities_by_product[product_id] = int(value)
+
+    best_sellers = sorted(
+        quantities_by_product.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    return "".join(
+        f"<li>Produit {pid}: {qty} vendu(s)</li>"
+        for pid, qty in best_sellers[:10]
+    )

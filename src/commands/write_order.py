@@ -102,10 +102,7 @@ def add_order_to_redis(order_id, user_id, total_amount, items):
     """Insert order to Redis"""
     
     r = get_redis_conn()
-    print(r)
-    """
-    Store order and order items in Redis
-    """
+
     # Store main order
     r.hset(
         f"order:{order_id}",
@@ -115,7 +112,8 @@ def add_order_to_redis(order_id, user_id, total_amount, items):
             "total_amount": total_amount
         }
     )
-    # Store order items
+
+    # Store order items 
     for index, item in enumerate(items):
 
         r.hset(
@@ -126,7 +124,12 @@ def add_order_to_redis(order_id, user_id, total_amount, items):
                 "unit_price": item["unit_price"]
             }
         )
-    # Keep track of newest orders
+        
+        key = f"product:{item['product_id']}:sold"
+
+        for _ in range(int(item["quantity"])):
+            r.incr(key)
+
     r.lpush("orders", order_id)
     
 
