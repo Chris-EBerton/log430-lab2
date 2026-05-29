@@ -152,6 +152,7 @@ def delete_order_from_redis(order_id):
     # Remove order ID from latest orders list
     r.lrem("orders", 0, str(order_id))
     
+    
 
 def sync_all_orders_to_redis():
     """ Sync orders from MySQL to Redis """
