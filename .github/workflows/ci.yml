@@ -21,6 +21,11 @@ jobs:
           echo "REDIS_PORT=6379" >> .env
           echo "REDIS_DB=0" >> .env
 
+      - name: Définir UID et GID
+        run: |
+          echo "UID=$(id -u)" >> $GITHUB_ENV
+          echo "GID=$(id -g)" >> $GITHUB_ENV
+
       - name: Cleanup previous environment
         run: |
           docker compose down -v --remove-orphans || true

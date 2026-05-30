@@ -1,9 +1,11 @@
 services:
   store_manager:
-    environment:
-      PYTHONDONTWRITEBYTECODE: 1
+  
     build: .
     container_name: store_manager_cliL2
+    environment:
+      PYTHONDONTWRITEBYTECODE: 1
+    user: "${UID:-1000}:${GID:-1000}"
     volumes:
       - .:/app
     networks:
