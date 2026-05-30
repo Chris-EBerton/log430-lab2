@@ -37,36 +37,56 @@ def get_orders_from_redis(limit=9999):
 
 def get_highest_spending_users():
     """Get report of highest spending users"""
-    r = get_redis_conn()
-    keys = r.keys("order:*")
-    orders = []
 
-    for key in keys:
-        if ":item:" in key:
-            continue
-        data = r.hgetall(key)
-        if not data:
-            continue
-        orders.append(data)
+    r = get_redis_conn()
+
+    keys = r.keys("order:*")
 
     expenses_by_user = defaultdict(float)
 
-    for order in orders:
-        expenses_by_user[int(order['user_id'])] += float(order['total_amount'])
+    #
+    # Primary source: Redis
+    #
+    if keys:
+
+        for key in keys:
+
+            if ":item:" in key:
+                continue
+
+            data = r.hgetall(key)
+
+            if not data:
+                continue
+
+            expenses_by_user[int(data["user_id"])] += float(
+                data["total_amount"]
+            )
+
+    #
+    # Fallback: MySQL
+    #
+    else:
+
+        orders = get_orders_from_mysql()
+
+        for order in orders:
+            expenses_by_user[order.user_id] += float(
+                order.total_amount
+            )
 
     highest_spending_users = sorted(
         expenses_by_user.items(),
         key=lambda item: item[1],
         reverse=True
     )
+
     result = []
 
     for user_id, total in highest_spending_users[:10]:
         result.append(
             f"<li>{user_id}: {total:.2f}$</li>"
         )
-    print("ALL KEYS:", r.keys("*"))
-    print("ORDER KEYS:", r.keys("order:*"))
 
     return "".join(result)
 
