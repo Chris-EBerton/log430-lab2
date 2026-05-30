@@ -129,6 +129,8 @@ def add_order_to_redis(order_id, user_id, total_amount, items):
 
         for _ in range(int(item["quantity"])):
             r.incr(key)
+    
+    print(f"Created order {order_id}")
 
     r.lpush("orders", order_id)
     

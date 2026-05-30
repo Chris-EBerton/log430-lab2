@@ -65,6 +65,8 @@ def get_highest_spending_users():
         result.append(
             f"<li>{user_id}: {total:.2f}$</li>"
         )
+    print("ALL KEYS:", r.keys("*"))
+    print("ORDER KEYS:", r.keys("order:*"))
 
     return "".join(result)
 
