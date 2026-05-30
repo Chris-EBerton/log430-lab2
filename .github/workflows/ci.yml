@@ -21,16 +21,21 @@ jobs:
           echo "REDIS_PORT=6379" >> .env
           echo "REDIS_DB=0" >> .env
 
+      - name: Cleanup previous environment
+        run: |
+          docker compose down -v --remove-orphans || true
+          docker rm -f mysqlL2 redis store_manager_cliL2 || true
+
       - name: Démarrer le conteneur
         run: |
-          docker network create labo02-network
+          docker network create labo02-network || true
           docker compose up -d
 
       - name: Attendre MySQL
         run: |
           sleep 10
           timeout=60
-          until docker exec mysql mysqladmin ping -h localhost -u root -proot --silent; do
+          until docker exec mysqlL2 mysqladmin ping -h localhost -u root -proot --silent; do
             echo "Waiting for MySQL..."
             sleep 3
             timeout=$((timeout - 3))
@@ -42,8 +47,8 @@ jobs:
           sleep 5
 
       - name: Éxécuter les tests
-        run: docker exec store_manager_cli pytest
+        run: docker exec store_manager_cliL2 pytest
 
       - name: Cleanup
         if: always()
-        run: docker compose down -v
+        run: docker compose down -v --remove-orphans

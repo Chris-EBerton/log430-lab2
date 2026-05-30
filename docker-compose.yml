@@ -1,7 +1,7 @@
 services:
   store_manager:
     build: .
-    container_name: store_manager_cli
+    container_name: store_manager_cliL2
     volumes:
       - .:/app
     networks:
