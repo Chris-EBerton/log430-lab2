@@ -20,15 +20,9 @@ jobs:
           echo "REDIS_PORT=6379" >> .env
           echo "REDIS_DB=0" >> .env
 
-      # Cleanup leftover containers/volumes from previous runs
-      - name: Cleanup previous environment
-        run: |
-          docker compose down -v --remove-orphans || true
-          docker rm -f mysql redis store_manager_cli || true
-
       - name: Démarrer le conteneur
         run: |
-          docker network create labo02-network || true
+          docker network create labo02-network
           docker compose up -d
 
       - name: Attendre MySQL
@@ -46,28 +40,9 @@ jobs:
           done
           sleep 5
 
-      # Explicitly clear Redis
-      - name: Reset Redis
-        run: |
-          docker exec redis redis-cli FLUSHALL
-
-      # Explicitly clear MySQL
-      - name: Reset MySQL
-        run: |
-          docker exec mysql mysql \
-            -uroot \
-            -proot \
-            -e "DROP DATABASE IF EXISTS labo02_db;"
-
-          docker exec mysql mysql \
-            -uroot \
-            -proot \
-            -e "CREATE DATABASE labo02_db;"
-
       - name: Éxécuter les tests
         run: docker exec store_manager_cli pytest
 
       - name: Cleanup
         if: always()
-        run: |
-          docker compose down -v --remove-orphans
+        run: docker compose down -v
