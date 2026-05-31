@@ -45,7 +45,7 @@ def get_highest_spending_users():
     expenses_by_user = defaultdict(float)
 
     #
-    # Primary source: Redis
+    #  Local : Redis/DAO
     #
     if keys:
 
@@ -62,9 +62,8 @@ def get_highest_spending_users():
             expenses_by_user[int(data["user_id"])] += float(
                 data["total_amount"]
             )
-
     #
-    # Fallback: MySQL
+    # Server run MySQL
     #
     else:
 

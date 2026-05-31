@@ -46,9 +46,12 @@ Oui : les informations sur la commande permettent de déduire autant les plus gr
 (Le cas échéant, décrivez votre pipeline CI/CD et ce que vous avez appris dans ce laboratoire en ce qui concerne le déploiement. Il est obligatoire d'ajouter du code, des captures d'écran ou des sorties de terminal pour illustrer votre réponse.)
 
 Pour ce déploiement, le CI déployé est plus défensif que le précédent étant donné qu'il adresse les problèmes potentiels de réutilisation de containers ou d'images Docker et élimine toutes  données résiduelles Redis et MySQL des anciens runs. De plus, l
-
-Ce laboratoire a toutefois permis de 
 ![Exemple problème réutilisation containers](image-10.png)
+
+Ce laboratoire a toutefois permis de comprendre une différence entre les tests locaux et les tests sur serveurs : les tests sur serveurs ne peuvent pas utiliser DAO. En fait, ils doivent directement accéder aux données par requêtes MySQL. Par exemple, il faut deux implémentations différentes du rapport des plus gros acheteurs : un pour le scénario local et un autre pour le scénario serveur. ![rapport_plus_gros_acheteurs Version locale](image-14.png)
+
+![rapport_plus_gros_acheteurs Version serveur](image-15.png)
+
 ![CI code : nettoyage explicit containers](image-11.png)
 ![Nettoyage explicit d'anciennes données Redis et MYSQL](image-12.png)
 
