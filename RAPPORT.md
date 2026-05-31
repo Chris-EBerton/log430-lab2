@@ -45,13 +45,14 @@ Oui : les informations sur la commande permettent de déduire autant les plus gr
 # Déploiement
 (Le cas échéant, décrivez votre pipeline CI/CD et ce que vous avez appris dans ce laboratoire en ce qui concerne le déploiement. Il est obligatoire d'ajouter du code, des captures d'écran ou des sorties de terminal pour illustrer votre réponse.)
 
-La complexité du déploiement et le manque de repères dans ce domaine empêche l'apprentissage profond de la matière. Quant au déploiement, le CI déployé est plus défensif que le précédent étant donné qu'il adresse les problèmes potentiels de réutilisation de containers ou d'images Docker et élimine toutes  données résiduelles Redis et MySQL des anciens runs. 
+Pour ce déploiement, le CI déployé est plus défensif que le précédent étant donné qu'il adresse les problèmes potentiels de réutilisation de containers ou d'images Docker et élimine toutes  données résiduelles Redis et MySQL des anciens runs. De plus, l
 
+Ce laboratoire a toutefois permis de 
 ![Exemple problème réutilisation containers](image-10.png)
 ![CI code : nettoyage explicit containers](image-11.png)
 ![Nettoyage explicit d'anciennes données Redis et MYSQL](image-12.png)
 
-Le déploiement devait aussi palier le problème étrange que les tests réussissent lorsque faits localement, mais pas sur le serveur.
-![Contrastre local-serveur](image-13.png)
+Le déploiement devait aussi palier le problème du des déploiements successifs échouant après le premier
+![Erreur permission CD checkout](image-13.png)
 
-Ce laboratoire a néanmoins permis de voir la différence entre l'accès direct à la base de données avec MySQL comparée à l'utilisation d'un DAO comme intermédiaire.
+Ce laboratoire a aussi permis de voir la différence entre l'accès direct à la base de données avec MySQL comparée à l'utilisation d'un DAO comme intermédiaire.
